@@ -11,7 +11,14 @@ require('dotenv').config();
 const app = express();
 const port = 5000;
 
-app.use(cors());
+const corsOptions = {
+    AccessControlAllowOrigin: '*',
+    origin: 'https://split-money-three.vercel.app',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+  }
+  app.use(cors(corsOptions))
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // Connect to MongoDB
