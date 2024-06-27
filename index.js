@@ -13,7 +13,7 @@ const port = 5000;
 
 const corsOptions = {
     AccessControlAllowOrigin: '*',
-    origin: 'https://split-money-three.vercel.app',
+    origin: 'https://split-money-backend.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
   }
  
