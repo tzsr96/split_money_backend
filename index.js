@@ -12,11 +12,12 @@ const app = express();
 const port = 5000;
 
 const corsOptions = {
-    AccessControlAllowOrigin: '*',
-    origin: 'https://split-money-backend.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
-  }
- 
+  origin: 'https://split-money-three.vercel.app',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Content-Type,Authorization',
+  credentials: true
+};
+
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
@@ -27,17 +28,18 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 // Define Schemas
 const userSchema = new mongoose.Schema({
-  username: String,
-  password: String
+  username: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
 
 const distributionSchema = new mongoose.Schema({
-  user_id: String,
-  amount: Number,
-  friends: String,
-  spender: String,
-  description: String,
-  distribution: Object
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  amount: { type: Number, required: true },
+  friends: { type: String, required: true },
+  spender: { type: String, required: true },
+  description: { type: String, required: true },
+  distribution: { type: Map, of: String, required: true }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -45,14 +47,15 @@ const Distribution = mongoose.model('Distribution', distributionSchema);
 
 app.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 8);
     
-    const user = new User({ username, password: hashedPassword });
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
     
     res.status(200).send('User registered successfully');
   } catch (err) {
+    console.error('Error registering user:', err);
     res.status(500).send('Server error');
   }
 });
@@ -67,10 +70,11 @@ app.post('/login', async (req, res) => {
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) return res.status(401).send('Invalid password');
     
-    const token = jwt.sign({ id: user._id }, 'your_jwt_secret', { expiresIn: 86400 });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: 86400 });
     
     res.status(200).send({ auth: true, token });
   } catch (err) {
+    console.error('Error logging in:', err);
     res.status(500).send('Server error');
   }
 });
@@ -91,7 +95,7 @@ app.post('/distribution', async (req, res) => {
     await newDistribution.save();
     res.status(200).send('Distribution saved successfully');
   } catch (err) {
-    console.error(err);
+    console.error('Error saving distribution:', err);
     res.status(500).send('Failed to save distribution');
   }
 });
@@ -102,7 +106,7 @@ app.get('/distributions/:userId', async (req, res) => {
     const distributions = await Distribution.find({ user_id: userId });
     res.status(200).json(distributions);
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching distributions:', err);
     res.status(500).send('Failed to fetch distributions');
   }
 });
