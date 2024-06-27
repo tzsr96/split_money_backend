@@ -16,8 +16,7 @@ const corsOptions = {
     origin: 'https://split-money-three.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
   }
-  app.use(cors(corsOptions))
-
+ 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
