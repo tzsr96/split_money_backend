@@ -12,7 +12,7 @@ const app = express();
 const port = 5000;
 
 const corsOptions = {
-  origin: 'https://split-money-three.vercel.app',
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
